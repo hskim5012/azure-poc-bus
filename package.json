@@ -1,0 +1,33 @@
+{
+    "name": "azure-servicebus-job-chaining",
+    "version": "1.0.0",
+    "description": "Proof of concept for sequential job processing using Azure Service Bus with queue-based chaining",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "dev": "ts-node src/index.ts",
+        "setup-infrastructure": "ts-node src/scripts/setup-infrastructure.ts",
+        "clean": "rimraf dist"
+    },
+    "keywords": [
+        "azure",
+        "service-bus",
+        "job-processing",
+        "queue"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "@azure/service-bus": "^7.9.5",
+        "dotenv": "^16.4.5",
+        "uuid": "^9.0.1"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.19",
+        "@types/uuid": "^9.0.8",
+        "rimraf": "^5.0.5",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.3.3"
+    }
+}
