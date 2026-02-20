@@ -22,8 +22,7 @@ export class ClaimAuditJobHandler implements IJobHandler {
     }
 
     private async auditClaims(event: WorkflowEvent): Promise<void> {
-        // Simulate processing time (1.0 - 2.0 seconds)
-        const delay = 1000 + Math.random() * 1000;
+        const delay = 45000;
         await new Promise((resolve) => setTimeout(resolve, delay));
 
         logger.debug(`[ClaimAuditHandler] Audited claims for workflow ${event.workflowId}`);

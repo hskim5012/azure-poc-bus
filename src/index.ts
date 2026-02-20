@@ -77,6 +77,7 @@ function promptUser(): void {
         switch (answer.trim()) {
             case '1':
                 await startAllWorkers();
+                promptUser();
                 break;
             case '2':
                 await triggerNewWorkflow();

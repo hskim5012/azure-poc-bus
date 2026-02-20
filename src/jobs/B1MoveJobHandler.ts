@@ -21,8 +21,7 @@ export class B1MoveJobHandler implements IJobHandler {
     }
 
     private async moveB1Data(event: WorkflowEvent): Promise<void> {
-        // Simulate processing time (1.5 - 3.0 seconds)
-        const delay = 1500 + Math.random() * 1500;
+        const delay = 110000;
         await new Promise((resolve) => setTimeout(resolve, delay));
 
         logger.debug(`[B1MoveHandler] Moved B1 data for workflow ${event.workflowId}`);

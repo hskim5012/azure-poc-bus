@@ -21,8 +21,7 @@ export class ClaimLoadingJobHandler implements IJobHandler {
     }
 
     private async loadClaims(event: WorkflowEvent): Promise<void> {
-        // Simulate processing time (1.5 - 2.5 seconds)
-        const delay = 1500 + Math.random() * 1000;
+        const delay = 60000;
         await new Promise((resolve) => setTimeout(resolve, delay));
 
         logger.debug(`[ClaimLoadingHandler] Loaded claims for workflow ${event.workflowId}`);

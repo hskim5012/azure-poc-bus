@@ -61,7 +61,17 @@ export class ServiceBusService {
      * Parse a Service Bus message into a WorkflowEvent
      */
     parseWorkflowEvent(message: ServiceBusReceivedMessage): WorkflowEvent {
-        const event = message.body as WorkflowEvent;
+        // Sometimes the body is a Buffer, string, or already parsed object depending on how it was sent/received
+        let event = message.body;
+        if (typeof event === 'string') {
+            try {
+                event = JSON.parse(event);
+            } catch (e) {
+                // Ignore parsing error, will be handled if eventType is missing
+            }
+        }
+
+        event = event as WorkflowEvent;
         // Convert date strings back to Date objects
         if (event.createdAt) {
             event.createdAt = new Date(event.createdAt);
