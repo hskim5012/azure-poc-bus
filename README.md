@@ -1,6 +1,6 @@
-# Azure Service Bus Sequential Job Processing POC
+# Azure Service Bus Event-Driven Job Chaining POC
 
-A proof of concept demonstrating sequential job processing using Azure Service Bus with a **simple queue-based chaining pattern**. Jobs execute in order: **Claim Loading** → **Claim Audit** → **B1 Move** → **B2 Move**, where each job triggers the next upon successful completion.
+A proof of concept demonstrating sequential job processing using Azure Service Bus with an **event-driven pub/sub architecture**. Jobs execute in order: **Claim Loading** → **Claim Audit** → **B1 Move** → **B2 Move**, where each job triggers the next upon successful completion. Now with **KEDA** autoscaling support on Kubernetes!
 
 ## Architecture Overview
 
@@ -232,6 +232,10 @@ To add more jobs to the chain:
 **Messages stuck in queue**: Check worker logs for errors, verify handlers are running
 
 **Permission errors**: Ensure the connection string has Manage/Send/Listen permissions
+
+## Kubernetes & KEDA
+
+To run this workload in Kubernetes (like AKS) using KEDA for Event-Driven Autoscaling (scaling to 0 when idle), see the instructions in [`k8s/README.md`](k8s/README.md).
 
 ## License
 

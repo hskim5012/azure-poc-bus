@@ -1,0 +1,61 @@
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: asb-trigger-auth
+spec:
+  secretTargetRef:
+    - parameter: connection
+      name: asb-secrets
+      key: AZURE_SERVICEBUS_CONNECTION_STRING
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: asb-worker-scaledobject
+  labels:
+    app: asb-worker
+spec:
+  scaleTargetRef:
+    name: asb-worker
+  
+  minReplicaCount: 0  # Scale down to zero when there are no messages
+  maxReplicaCount: 1  # Maximum number of pods (restricted to 1 due to heavy DB workload)
+  pollingInterval: 15 # How frequently KEDA polls Azure Service Bus (in seconds)
+  cooldownPeriod: 30  # How long to wait after the last event before scaling back down to 0
+  
+  triggers:
+    # Trigger 1: claim-loading-sub
+    - type: azure-servicebus
+      metadata:
+        topicName: workflow-events-topic
+        subscriptionName: claim-loading-sub
+        messageCount: "5" # Scale up if there are more than 5 messages per pod
+      authenticationRef:
+        name: asb-trigger-auth
+        
+    # Trigger 2: claim-audit-sub
+    - type: azure-servicebus
+      metadata:
+        topicName: workflow-events-topic
+        subscriptionName: claim-audit-sub
+        messageCount: "5"
+      authenticationRef:
+        name: asb-trigger-auth
+        
+    # Trigger 3: b1-move-sub
+    - type: azure-servicebus
+      metadata:
+        topicName: workflow-events-topic
+        subscriptionName: b1-move-sub
+        messageCount: "5"
+      authenticationRef:
+        name: asb-trigger-auth
+        
+    # Trigger 4: b2-move-sub
+    - type: azure-servicebus
+      metadata:
+        topicName: workflow-events-topic
+        subscriptionName: b2-move-sub
+        messageCount: "5"
+      authenticationRef:
+        name: asb-trigger-auth

@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: asb-worker
+  labels:
+    app: asb-worker
+spec:
+  # Initial replicas before KEDA takes over (KEDA will override this)
+  replicas: 1
+  selector:
+    matchLabels:
+      app: asb-worker
+  template:
+    metadata:
+      labels:
+        app: asb-worker
+    spec:
+      containers:
+      - name: worker
+        image: asb-worker:latest  # Replace with an Azure Container Registry (ACR) image path for production
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: AZURE_SERVICEBUS_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: asb-secrets
+              key: AZURE_SERVICEBUS_CONNECTION_STRING
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"

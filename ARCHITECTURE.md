@@ -81,3 +81,40 @@ Creates the Topic, the Subscriptions, and specifically deletes the `$Default` al
 5. Orchestrator publishes `ClaimLoadingCompleted` to the Topic.
 6. Azure routes it to the `claim-audit-sub` matching the SQL Filter.
 7. Event propagation continues until the final handler finishes.
+
+## Kubernetes & KEDA Autoscaling
+
+The application has been extended to support Kubernetes Event-driven Autoscaling (KEDA) in Azure Kubernetes Service (AKS).
+
+### How KEDA Fits In
+
+```mermaid
+graph TB
+    subgraph "Kubernetes (AKS)"
+        KEDA[KEDA Operator]
+        HPA[Horizontal Pod Autoscaler]
+        
+        subgraph "Deployment: asb-worker"
+            W1[Pod 1]
+            W2[Pod 2]
+            WN[Pod N]
+        end
+    end
+    
+    subgraph "Azure Service Bus"
+        T1[workflow-events-topic]
+        S1[claim-loading-sub]
+        S2[claim-audit-sub]
+    end
+    
+    KEDA -->|1. Poll sub queues| T1
+    KEDA -->|2. Feed metrics| HPA
+    HPA -->|3. Scale| W1
+    
+    S1 -.->|Receive| W1
+    S2 -.->|Receive| W2
+```
+
+1. **Metrics Tailing**: KEDA continually polls the 4 subscriptions.
+2. **Scale to Zero**: If no messages exist in any subscription, KEDA scales the `asb-worker` deployment to 0 pods, saving costs.
+3. **Scale Out**: When a message appears (e.g., `WorkflowStarted`), KEDA scales the deployment up to 1 pod. Due to the heavy database workload (stored procedures), the maximum replica count is restricted to 1 to prevent database contention.
