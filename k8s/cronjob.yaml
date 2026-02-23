@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: asb-workflow-trigger
+  labels:
+    app: asb-trigger
+spec:
+  # Schedule: Every day at 2:00 AM (Adjust as needed)
+  schedule: "0 2 * * *"
+  # Don't run concurrently if the previous job is still somehow running
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: asb-trigger
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: trigger
+            image: asb-worker:latest  # Note: Uses the exact same Docker image as the worker!
+            imagePullPolicy: IfNotPresent
+            # We override the command to run the trigger script instead of the worker script
+            command: ["npm", "run", "start:trigger"]
+            env:
+            - name: NODE_ENV
+              value: "production"
+            - name: AZURE_SERVICEBUS_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: asb-secrets
+                  key: AZURE_SERVICEBUS_CONNECTION_STRING
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "128Mi"
+              limits:
+                cpu: "250m"
+                memory: "256Mi"
