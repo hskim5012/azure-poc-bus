@@ -46,6 +46,7 @@ export class WorkflowOrchestrator {
             return {
                 success: false,
                 errorMessage: error instanceof Error ? error.message : 'Unknown error',
+                errorType: 'transient',
             };
         }
     }

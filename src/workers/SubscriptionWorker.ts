@@ -56,11 +56,35 @@ export class SubscriptionWorker {
                 await this.receiver.completeMessage(message);
                 logger.debug(`[${this.subscriptionName}] Message completed successfully`);
             } else {
-                // Abandon the message (will be retried or moved to dead-letter queue)
-                logger.warn(`[${this.subscriptionName}] Job failed, abandoning message`, {
-                    error: result.errorMessage,
-                });
-                await this.receiver.abandonMessage(message);
+                if (result.errorType === 'deterministic') {
+                    // Dead-letter deterministic failures
+                    logger.error(`[${this.subscriptionName}] Job failed deterministically, dead-lettering message`, {
+                        error: result.errorMessage,
+                    });
+                    await this.receiver.deadLetterMessage(message, {
+                        deadLetterReason: 'DeterministicJobFailure',
+                        deadLetterErrorDescription: result.errorMessage || 'Job failed deterministically'
+                    });
+                } else {
+                    // Transient failures: Check deliveryCount
+                    const MAX_RETRIES = 5;
+                    if (message.deliveryCount && message.deliveryCount >= MAX_RETRIES) {
+                        logger.error(`[${this.subscriptionName}] Message exceeded max retries (${MAX_RETRIES}), dead-lettering message`, {
+                            error: result.errorMessage,
+                        });
+                        await this.receiver.deadLetterMessage(message, {
+                            deadLetterReason: 'MaxRetriesExceeded',
+                            deadLetterErrorDescription: result.errorMessage || 'Exceeded maximum retries'
+                        });
+                    } else {
+                        // Abandon the message so it can be retried
+                        logger.warn(`[${this.subscriptionName}] Job failed transiently, abandoning message for retry`, {
+                            error: result.errorMessage,
+                            deliveryCount: message.deliveryCount
+                        });
+                        await this.receiver.abandonMessage(message);
+                    }
+                }
             }
         } catch (error) {
             logger.error(`[${this.subscriptionName}] Error processing message`, error);
