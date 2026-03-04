@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: worker
-        image: asb-worker:latest  # Replace with an Azure Container Registry (ACR) image path for production
+        image: accesshealthpoc.azurecr.io/asb-worker:latest  # Replace with an Azure Container Registry (ACR) image path for production
         imagePullPolicy: IfNotPresent
         env:
         - name: NODE_ENV

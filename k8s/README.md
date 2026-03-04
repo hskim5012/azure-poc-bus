@@ -34,7 +34,6 @@ kubectl create secret generic asb-secrets --from-literal=AZURE_SERVICEBUS_CONNEC
 Apply the Secret, Deployment, and KEDA configurations to your cluster:
 
 ```bash
-kubectl apply -f secret.yaml
 kubectl apply -f deployment.yaml
 kubectl apply -f keda.yaml
 ```
@@ -64,4 +63,5 @@ kubectl apply -f keda.yaml
    ```
    You will see the KEDA operator detect the message and instantly scale your deployment from 0 to 1 instance.
 
-6. Wait 30 seconds after the message is processed. Once the queues are completely empty, the pod will be gracefully terminated and scaled back down to 0.
+6. Wait 30 seconds after the message is processed. Once the subscriptions are empty, the pod is gracefully terminated and scaled back down to 0.
+

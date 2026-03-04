@@ -57,19 +57,19 @@ Instead of tightly coupling `ClaimLoading` to `ClaimAudit` via individual queues
 
 ### Component Overview
 
-#### [src/config.ts](file:///c:/Workspace/POCs/AzureServiceBusJobChaining/src/config.ts)
+#### [src/config.ts](src/config.ts)
 The central configuration. Defines the 1 Topic (`workflow-events-topic`) and 4 Subscriptions.
 
-#### [src/models/WorkflowEvent.ts](file:///c:/Workspace/POCs/AzureServiceBusJobChaining/src/models/WorkflowEvent.ts)
+#### [src/models/WorkflowEvent.ts](src/models/WorkflowEvent.ts)
 The payload sent across the Service Bus. Includes the critical `eventType` property which Azure uses for routing.
 
-#### [src/services/ServiceBusService.ts](file:///c:/Workspace/POCs/AzureServiceBusJobChaining/src/services/ServiceBusService.ts)
+#### [src/services/ServiceBusService.ts](src/services/ServiceBusService.ts)
 The Azure Service Bus communicator. `publishEvent()` sets the `eventType` as a message Application Property, allowing Azure's SQL Filters to properly route the message to the right subscription.
 
-#### [src/services/WorkflowOrchestrator.ts](file:///c:/Workspace/POCs/AzureServiceBusJobChaining/src/services/WorkflowOrchestrator.ts)
+#### [src/services/WorkflowOrchestrator.ts](src/services/WorkflowOrchestrator.ts)
 Receives an event, finds the right handler via `JobHandlerFactory`, and publishes the NEXT event (the completion event) back to the Service Bus.
 
-#### [src/scripts/setup-infrastructure.ts](file:///c:/Workspace/POCs/AzureServiceBusJobChaining/src/scripts/setup-infrastructure.ts)
+#### [src/scripts/setup-infrastructure.ts](src/scripts/setup-infrastructure.ts)
 Creates the Topic, the Subscriptions, and specifically deletes the `$Default` allow-all rule and replaces it with SQL Rules (e.g. `eventType = 'WorkflowStarted'`).
 
 ## Complete Event Flow
@@ -107,7 +107,7 @@ graph TB
         S2[claim-audit-sub]
     end
     
-    KEDA -->|1. Poll sub queues| T1
+    KEDA -->|1. Poll subscriptions| T1
     KEDA -->|2. Feed metrics| HPA
     HPA -->|3. Scale| W1
     
@@ -118,3 +118,7 @@ graph TB
 1. **Metrics Tailing**: KEDA continually polls the 4 subscriptions.
 2. **Scale to Zero**: If no messages exist in any subscription, KEDA scales the `asb-worker` deployment to 0 pods, saving costs.
 3. **Scale Out**: When a message appears (e.g., `WorkflowStarted`), KEDA scales the deployment up to 1 pod. Due to the heavy database workload (stored procedures), the maximum replica count is restricted to 1 to prevent database contention.
+
+## Service Bus Tier Requirement
+
+Because this design uses **Topics + Subscriptions**, use Azure Service Bus **Standard or Premium** tier.

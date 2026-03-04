@@ -1,102 +1,86 @@
-# Quick Start Guide - Run in Git Bash
+# Quick Start Guide
 
-Open **Git Bash** terminal and run these commands:
+Run these commands from this project root (`azure-poc-bus`).
 
-## Step 1: Navigate to Project
-```bash
-cd /c/Workspace/POCs/AzureServiceBusJobChaining
-```
-
-## Step 2: Install Dependencies
+## Step 1: Install Dependencies
 ```bash
 npm install
 ```
 
-## Step 3: Build the Project
-```bash
-npm run build
-```
+## Step 2: Configure Environment Variables
+Create a `.env` file and set:
 
-## Step 4: Set Up Environment Variables
-```bash
-# Copy the example file
-cp .env.example .env
-
-# Edit .env file and add your Azure Service Bus connection string
-# You can use: notepad .env
-```
-
-In the `.env` file, add:
-```
+```env
 AZURE_SERVICEBUS_CONNECTION_STRING=Endpoint=sb://YOUR-NAMESPACE.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=YOUR-KEY-HERE
 LOG_LEVEL=info
+AZURE_SB_TOPIC_NAME=workflow-events-topic
+AZURE_SB_SUB_CLAIM_LOADING=claim-loading-sub
+AZURE_SB_SUB_CLAIM_AUDIT=claim-audit-sub
+AZURE_SB_SUB_B1_MOVE=b1-move-sub
+AZURE_SB_SUB_B2_MOVE=b2-move-sub
 ```
 
-## Step 5: Create Queues in Azure (requires connection string)
+## Step 3: Create Topic, Subscriptions, and Filters
 ```bash
-npm run setup-queues
+npm run setup-infrastructure
 ```
 
-## Step 6: Run the POC
+## Step 4: Run Locally
 
-### Terminal 1 - Start Workers
+### Option A: Interactive menu
 ```bash
-npm start
-# Choose option 1: Start all workers
+npm run dev
 ```
 
-### Terminal 2 - Trigger Workflow
-Open a second Git Bash terminal:
+- Choose `1` to start workers
+- Choose `2` to trigger a workflow
+
+### Option B: Two-terminal mode
+
+Terminal 1 (worker process):
 ```bash
-cd /c/Workspace/POCs/AzureServiceBusJobChaining
-npm start
-# Choose option 2: Trigger new workflow
+npm run build
+npm run start:worker
 ```
 
-## Expected Output in Terminal 1 (Workers)
-
-You should see:
+Terminal 2 (trigger one workflow):
+```bash
+npm run build
+npm run start:trigger
 ```
-✓ Worker started for claim-loading-queue
-✓ Worker started for claim-audit-queue
-✓ Worker started for b1-move-queue
-✓ Worker started for b2-move-queue
 
-All workers are running. Press Ctrl+C to stop.
+## Expected Worker Output (Example)
 
-[claim-loading-queue] Received message for workflow: abc-123
-[ClaimLoadingHandler] Processing workflow abc-123...
-[ClaimLoadingHandler] ✓ Completed in 2.1s
-[Orchestrator] Sending to next queue: claim-audit-queue
+```text
+✓ Worker started for subscription: claim-loading-sub
+✓ Worker started for subscription: claim-audit-sub
+✓ Worker started for subscription: b1-move-sub
+✓ Worker started for subscription: b2-move-sub
 
-[claim-audit-queue] Received message for workflow: abc-123
-[ClaimAuditHandler] Processing workflow abc-123...
-[ClaimAuditHandler] ✓ Completed in 1.8s
-[Orchestrator] Sending to next queue: b1-move-queue
+[claim-loading-sub] Received WorkflowStarted for workflow: abc-123
+[Orchestrator] Publishing completion event: ClaimLoadingCompleted
 
-[b1-move-queue] Received message for workflow: abc-123
-[B1MoveHandler] Processing workflow abc-123...
-[B1MoveHandler] ✓ Completed in 2.3s
-[Orchestrator] Sending to next queue: b2-move-queue
+[claim-audit-sub] Received ClaimLoadingCompleted for workflow: abc-123
+[Orchestrator] Publishing completion event: ClaimAuditCompleted
 
-[b2-move-queue] Received message for workflow: abc-123
-[B2MoveHandler] Processing workflow abc-123...
-[B2MoveHandler] ✓ Completed in 1.9s
-[Orchestrator] ✓ Workflow abc-123 complete!
+[b1-move-sub] Received ClaimAuditCompleted for workflow: abc-123
+[Orchestrator] Publishing completion event: B1MoveCompleted
+
+[b2-move-sub] Received B1MoveCompleted for workflow: abc-123
+[Orchestrator] ✓ Workflow abc-123 is fully complete!
 ```
 
 ## Troubleshooting
 
-**If npm commands don't work:**
-- Make sure you're in Git Bash (not PowerShell)
-- Verify Node.js: `node --version` (should show v24.11.1)
+**If npm commands fail**
+- Verify Node.js: `node --version`
 - Verify npm: `npm --version`
 
-**If Azure connection fails:**
-- Double-check your connection string in `.env`
-- Ensure your Azure Service Bus namespace exists
-- Verify you have permissions (Manage, Send, Listen)
+**If Service Bus setup fails**
+- Ensure your namespace is **Standard or Premium** (topics/subscriptions are required)
+- Validate `AZURE_SERVICEBUS_CONNECTION_STRING`
+- Confirm permissions include Manage/Send/Listen
 
-**If queues already exist:**
-- That's fine! The setup script will detect and skip them
-- You can also create them manually in Azure Portal
+**If events are not routed**
+- Re-run `npm run setup-infrastructure`
+- Check subscription rules and confirm `$Default` rule was removed

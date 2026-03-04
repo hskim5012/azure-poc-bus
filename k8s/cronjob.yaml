@@ -5,10 +5,11 @@ metadata:
   labels:
     app: asb-trigger
 spec:
-  # Schedule: Every day at 2:00 AM (Adjust as needed)
-  schedule: "0 2 * * *"
+  schedule: "*/15 * * * *"
   # Don't run concurrently if the previous job is still somehow running
   concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 10
   jobTemplate:
     spec:
       template:
@@ -19,7 +20,7 @@ spec:
           restartPolicy: OnFailure
           containers:
           - name: trigger
-            image: asb-worker:latest  # Note: Uses the exact same Docker image as the worker!
+            image: accesshealthpoc.azurecr.io/asb-worker:latest  # Note: Uses the exact same Docker image as the worker!
             imagePullPolicy: IfNotPresent
             # We override the command to run the trigger script instead of the worker script
             command: ["npm", "run", "start:trigger"]

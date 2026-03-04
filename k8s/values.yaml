@@ -1,0 +1,86 @@
+# Wiz Kubernetes Integration
+
+# Global values to override all chart values from external sources.
+global:
+  # Wiz Service Account used to authenticate to Wiz.
+  wizApiToken:
+    secret: # Recommended to create secret outside of the chart
+      create: false
+      name: "wiz-api-token" # Name of the API token secret
+  clusterExternalId: "" # Required for OKE clusters - specify the cluster's OCID, leave blank otherwise
+  # Set to true to use FedRamp endpoints and FIPS-compliant images.
+  isFedRamp: false
+
+  #--- Needs user input.  Do not use if istio is not installed to cluster ---
+  istio:
+    enabled: false
+    proxySidecarPort: 15000
+
+# Wiz Kubernetes Connector
+# Configuration values for the wiz-kubernetes-connector dependency
+# ref: https://github.com/wiz-sec/charts/blob/master/wiz-kubernetes-connector/values.yaml
+#
+wiz-kubernetes-connector:
+  enabled: true
+  wiz-broker:
+    enabled: true
+  autoCreateConnector: 
+    enabled: true
+    clusterFlavor: AKS # <<< UPDATE THIS - Possible values: EKS, AKS, GKE, OKE, OpenShift, ACK, Kubernetes (defaults to Kubernetes)
+
+  ## ---- Do not modify ----
+  wizApiToken:
+    secret:
+      create: false # Secret created by wiz-kubernetes-integration.
+  httpProxyConfiguration:
+    create: false # Secret created by wiz-kubernetes-integration.
+  ## -----------------------
+
+# Wiz Admission Controller
+# Configuration values for the wiz-admission-controller dependency
+# ref: https://github.com/wiz-sec/charts/blob/master/wiz-admission-controller/values.yaml
+#
+wiz-admission-controller:
+  enabled: true
+  opaWebhook:
+    enabled: true
+  imageIntegrityWebhook: # Used for image validation. Requires additional setup
+    enabled: false
+  kubernetesAuditLogsWebhook:
+    enabled: true
+
+  ## ---- Do not modify ----
+  wizApiToken:
+    secret:
+      create: false # Secret created by wiz-kubernetes-integration.
+  httpProxyConfiguration:
+    create: false # Secret created by wiz-kubernetes-integration. 
+  ## -----------------------
+
+# Wiz Sensor
+# Configuration values for the wiz-sensor dependency
+# ref: https://github.com/wiz-sec/charts/blob/master/wiz-sensor/values.yaml
+#
+wiz-sensor:
+  enabled: true
+  imagePullSecret:
+    # The default sensor registry requires a pull secret. Set to false
+    # if mirroring the image.
+    required: true
+    # set to false when using an existing secret
+    create: false
+    name: "sensor-image-pull" # Name of the docker secret used to pull the sensor
+  apiSecurity:
+    enabled: true
+  openshift: false # Set to true for OKE clusters
+  gkeAutopilot: false # Set to true for GKE clusters with Autopilot enabled
+  windows:
+    enabled: false # For Windows sensor configuration
+
+  ## ---- Do not modify ----
+  wizApiToken:
+    secret:
+      create: false # Secret created by wiz-kubernetes-integration.
+  httpProxyConfiguration:
+    create: false # Secret created by wiz-kubernetes-integration.
+  ## -----------------------
