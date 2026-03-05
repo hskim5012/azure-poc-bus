@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: claim-loading-worker (java)
+  labels:
+    app: claim-loading-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: claim-loading-worker
+  template:
+    metadata:
+      labels:
+        app: claim-loading-worker
+    spec:
+      containers:
+      - name: worker
+        image: accesshealthpoc.azurecr.io/claim-loading-worker:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: AZURE_SERVICEBUS_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: asb-secrets
+              key: AZURE_SERVICEBUS_CONNECTION_STRING
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "384Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"

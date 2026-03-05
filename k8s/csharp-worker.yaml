@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: claim-audit-worker (csharp)
+  labels:
+    app: claim-audit-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: claim-audit-worker
+  template:
+    metadata:
+      labels:
+        app: claim-audit-worker
+    spec:
+      containers:
+      - name: worker
+        image: accesshealthpoc.azurecr.io/claim-audit-worker:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: AZURE_SERVICEBUS_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: asb-secrets
+              key: AZURE_SERVICEBUS_CONNECTION_STRING
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"

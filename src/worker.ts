@@ -17,8 +17,8 @@ async function startAllWorkers(): Promise<void> {
 
     // Create workers for each subscription on the topic
     const subscriptions = [
-        config.subscriptions.claimLoading,
-        config.subscriptions.claimAudit,
+        // config.subscriptions.claimLoading, // Now handled by Java Claim Loading Service
+        // config.subscriptions.claimAudit,   // Now handled by C# Claim Audit Service
         config.subscriptions.b1Move,
         config.subscriptions.b2Move,
     ];

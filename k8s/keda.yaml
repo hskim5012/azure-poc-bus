@@ -8,6 +8,53 @@ spec:
       name: asb-secrets
       key: AZURE_SERVICEBUS_CONNECTION_STRING
 ---
+# 1) Java Claim Loading Scaler
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: claim-loading-scaledobject
+  labels:
+    app: claim-loading-worker
+spec:
+  scaleTargetRef:
+    name: claim-loading-worker
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  pollingInterval: 15
+  cooldownPeriod: 30
+  triggers:
+    - type: azure-servicebus
+      metadata:
+        topicName: workflow-events-topic
+        subscriptionName: claim-loading-sub
+        messageCount: "5"
+      authenticationRef:
+        name: asb-trigger-auth
+---
+# 2) C# Claim Audit Scaler
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: claim-audit-scaledobject
+  labels:
+    app: claim-audit-worker
+spec:
+  scaleTargetRef:
+    name: claim-audit-worker
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  pollingInterval: 15
+  cooldownPeriod: 30
+  triggers:
+    - type: azure-servicebus
+      metadata:
+        topicName: workflow-events-topic
+        subscriptionName: claim-audit-sub
+        messageCount: "5"
+      authenticationRef:
+        name: asb-trigger-auth
+---
+# 3) Node.js B1/B2 Orchestrator Scaler
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -17,32 +64,11 @@ metadata:
 spec:
   scaleTargetRef:
     name: asb-worker
-  
-  minReplicaCount: 0  # Scale down to zero when there are no messages
-  maxReplicaCount: 1  # Maximum number of pods (restricted to 1 due to heavy DB workload)
-  pollingInterval: 15 # How frequently KEDA polls Azure Service Bus (in seconds)
-  cooldownPeriod: 30  # How long to wait after the last event before scaling back down to 0
-  
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  pollingInterval: 15
+  cooldownPeriod: 30
   triggers:
-    # Trigger 1: claim-loading-sub
-    - type: azure-servicebus
-      metadata:
-        topicName: workflow-events-topic
-        subscriptionName: claim-loading-sub
-        messageCount: "5" # Scale up if there are more than 5 messages per pod
-      authenticationRef:
-        name: asb-trigger-auth
-        
-    # Trigger 2: claim-audit-sub
-    - type: azure-servicebus
-      metadata:
-        topicName: workflow-events-topic
-        subscriptionName: claim-audit-sub
-        messageCount: "5"
-      authenticationRef:
-        name: asb-trigger-auth
-        
-    # Trigger 3: b1-move-sub
     - type: azure-servicebus
       metadata:
         topicName: workflow-events-topic
@@ -50,8 +76,6 @@ spec:
         messageCount: "5"
       authenticationRef:
         name: asb-trigger-auth
-        
-    # Trigger 4: b2-move-sub
     - type: azure-servicebus
       metadata:
         topicName: workflow-events-topic
