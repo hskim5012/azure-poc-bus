@@ -27,7 +27,7 @@ spec:
       metadata:
         topicName: workflow-events-topic
         subscriptionName: claim-loading-sub
-        messageCount: "5"
+        messageCount: "1"
       authenticationRef:
         name: asb-trigger-auth
 ---
@@ -50,7 +50,7 @@ spec:
       metadata:
         topicName: workflow-events-topic
         subscriptionName: claim-audit-sub
-        messageCount: "5"
+        messageCount: "1"
       authenticationRef:
         name: asb-trigger-auth
 ---
@@ -73,13 +73,13 @@ spec:
       metadata:
         topicName: workflow-events-topic
         subscriptionName: b1-move-sub
-        messageCount: "5"
+        messageCount: "1"
       authenticationRef:
         name: asb-trigger-auth
     - type: azure-servicebus
       metadata:
         topicName: workflow-events-topic
         subscriptionName: b2-move-sub
-        messageCount: "5"
+        messageCount: "1"
       authenticationRef:
         name: asb-trigger-auth
