@@ -1,11 +1,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: claim-loading-worker (java)
+  name: claim-loading-worker
   labels:
     app: claim-loading-worker
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app: claim-loading-worker

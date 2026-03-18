@@ -1,11 +1,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: claim-audit-worker (csharp)
+  name: claim-audit-worker
   labels:
     app: claim-audit-worker
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app: claim-audit-worker
