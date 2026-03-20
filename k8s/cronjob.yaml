@@ -6,6 +6,9 @@ metadata:
     app: asb-trigger
 spec:
   schedule: "*/15 * * * *"
+  timeZone: "America/Chicago"
+  suspend: true
+  startingDeadlineSeconds: 300
   # Don't run concurrently if the previous job is still somehow running
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3

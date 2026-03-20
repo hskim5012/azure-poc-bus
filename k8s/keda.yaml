@@ -5,7 +5,7 @@ metadata:
 spec:
   secretTargetRef:
     - parameter: connection
-      name: asb-secrets
+      name: asb-secrets 
       key: AZURE_SERVICEBUS_CONNECTION_STRING
 ---
 # 1) Java Claim Loading Scaler
@@ -21,7 +21,7 @@ spec:
   minReplicaCount: 0
   maxReplicaCount: 1
   pollingInterval: 15
-  cooldownPeriod: 30
+  cooldownPeriod: 90
   triggers:
     - type: azure-servicebus
       metadata:
@@ -44,7 +44,7 @@ spec:
   minReplicaCount: 0
   maxReplicaCount: 1
   pollingInterval: 15
-  cooldownPeriod: 30
+  cooldownPeriod: 90
   triggers:
     - type: azure-servicebus
       metadata:
@@ -67,7 +67,7 @@ spec:
   minReplicaCount: 0
   maxReplicaCount: 1
   pollingInterval: 15
-  cooldownPeriod: 30
+  cooldownPeriod: 90
   triggers:
     - type: azure-servicebus
       metadata:
