@@ -5,9 +5,9 @@ metadata:
   labels:
     app: asb-trigger
 spec:
-  schedule: "*/15 * * * *"
+  schedule: "*/5 * * * *"
   timeZone: "America/Chicago"
-  suspend: true
+  suspend: false
   startingDeadlineSeconds: 300
   # Don't run concurrently if the previous job is still somehow running
   concurrencyPolicy: Forbid
